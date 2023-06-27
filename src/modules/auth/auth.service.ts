@@ -3,10 +3,10 @@ import {
   Injectable,
   UnauthorizedException,
 } from '@nestjs/common';
+import { JwtService } from '@nestjs/jwt';
 import { compare, hash } from 'bcryptjs';
 import { SignInDto } from './dto/sign-in.dto';
 import { UsersRepository } from 'src/shared/database/repositories/users.repositories';
-import { JwtService } from '@nestjs/jwt';
 import { SignUpDto } from './dto/sign-up.dto';
 import { defaultUserCategories } from './constants';
 
