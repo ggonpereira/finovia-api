@@ -11,21 +11,7 @@ export class BankAccountsService {
     private readonly validateBankAccountOwnershipService: ValidateBankAccountOwnershipService,
   ) {}
 
-  create(userId: string, createBankAccountDto: CreateBankAccountDto) {
-    const { color, initialBalance, name, type } = createBankAccountDto;
-
-    return this.bankAccountsRepo.create({
-      data: {
-        color,
-        initialBalance,
-        name,
-        type,
-        userId,
-      },
-    });
-  }
-
-  findAll(userId: string) {
+  findAllByUserId(userId: string) {
     return this.bankAccountsRepo.findMany({
       where: {
         userId,
@@ -38,6 +24,20 @@ export class BankAccountsService {
       userId,
       bankAccountId,
     );
+  }
+
+  create(userId: string, createBankAccountDto: CreateBankAccountDto) {
+    const { color, initialBalance, name, type } = createBankAccountDto;
+
+    return this.bankAccountsRepo.create({
+      data: {
+        color,
+        initialBalance,
+        name,
+        type,
+        userId,
+      },
+    });
   }
 
   async update(
