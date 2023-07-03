@@ -60,8 +60,10 @@ $ psql -U <NAME_OF_YOUR_USER
 - Create your database
 $ CREATE DATABASE <NAME_OF_YOUR_DB>;
 
-- Now you are good to go. Just remember to always start Docker before
-running the API
+- Run:
+$ yarn prisma migrate dev
+
+- Now you are good to go. Just remember to always start Docker before running the API
 ```
 
 #### Using PostgreSQL desktop
