@@ -1,86 +1,22 @@
-import { HttpStatus, Injectable } from '@nestjs/common';
-import { CreateBankAccountDto } from '../dto/create-bank-account.dto';
-import { UpdateBankAccountDto } from '../dto/update-bank-account.dto';
+import { Injectable, NotFoundException } from '@nestjs/common';
 import { BankAccountsRepository } from 'src/shared/database/repositories/bank-accounts.repositories';
-import { ValidateBankAccountOwnershipService } from './verify-bank-accounts.service';
 
 @Injectable()
-export class BankAccountsService {
-  constructor(
-    private readonly bankAccountsRepo: BankAccountsRepository,
-    private readonly validateBankAccountOwnershipService: ValidateBankAccountOwnershipService,
-  ) {}
+export class ValidateBankAccountOwnershipService {
+  constructor(private readonly bankAccountsRepo: BankAccountsRepository) {}
 
-  findAllByUserId(userId: string) {
-    return this.bankAccountsRepo.findMany({
+  async validate(userId: string, bankAccountId: string) {
+    const bankAccountInfo = await this.bankAccountsRepo.findFirst({
       where: {
+        id: bankAccountId,
         userId,
       },
     });
-  }
 
-  async findFirst(userId: string, bankAccountId: string) {
-    return await this.validateBankAccountOwnershipService.validate(
-      userId,
-      bankAccountId,
-    );
-  }
+    if (!bankAccountInfo || bankAccountInfo.userId !== userId) {
+      throw new NotFoundException('Bank account not found');
+    }
 
-  create(userId: string, createBankAccountDto: CreateBankAccountDto) {
-    const { color, initialBalance, name, type } = createBankAccountDto;
-
-    return this.bankAccountsRepo.create({
-      data: {
-        color,
-        initialBalance,
-        name,
-        type,
-        userId,
-      },
-    });
-  }
-
-  async update(
-    userId: string,
-    bankAccountId: string,
-    updateBankAccountDto: UpdateBankAccountDto,
-  ) {
-    await this.validateBankAccountOwnershipService.validate(
-      userId,
-      bankAccountId,
-    );
-
-    const { color, name, type, initialBalance } = updateBankAccountDto;
-
-    const bankAccountUpdatedInfo = await this.bankAccountsRepo.update({
-      data: {
-        color,
-        name,
-        type,
-        initialBalance,
-      },
-      where: {
-        id: bankAccountId,
-      },
-    });
-
-    return bankAccountUpdatedInfo;
-  }
-
-  async delete(userId: string, bankAccountId: string) {
-    await this.validateBankAccountOwnershipService.validate(
-      userId,
-      bankAccountId,
-    );
-
-    await this.bankAccountsRepo.delete({
-      where: {
-        id: bankAccountId,
-      },
-    });
-
-    return {
-      status: HttpStatus.NO_CONTENT,
-    };
+    return bankAccountInfo;
   }
 }
