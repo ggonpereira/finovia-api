@@ -11,11 +11,35 @@ export class BankAccountsService {
     private readonly validateBankAccountOwnershipService: ValidateBankAccountOwnershipService,
   ) {}
 
-  findAllByUserId(userId: string) {
-    return this.bankAccountsRepo.findMany({
+  async findAllByUserId(userId: string) {
+    const bankAccounts = await this.bankAccountsRepo.findMany({
       where: {
         userId,
       },
+      include: {
+        transactions: {
+          select: {
+            value: true,
+            type: true,
+          },
+        },
+      },
+    });
+
+    return bankAccounts.map((bankAccount) => {
+      const currentBalance = bankAccount.transactions.reduce(
+        (acc, transaction) =>
+          acc +
+          (transaction.type === 'INCOME'
+            ? transaction.value
+            : -transaction.value),
+        bankAccount.initialBalance,
+      );
+
+      return {
+        currentBalance,
+        ...bankAccount,
+      };
     });
   }
 
